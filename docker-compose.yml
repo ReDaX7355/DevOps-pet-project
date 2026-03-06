@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  postgres-db:
+    container_name: postgres-db
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: todo_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  app_backend:
+    container_name: app_backend
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "4450:4450"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres-db:5432/todo_db
+      PORT: 4450
+    depends_on:
+      - postgres-db
+    networks:
+      - app-network
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "8580:80"
+    depends_on:
+      - app_backend
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    external: true

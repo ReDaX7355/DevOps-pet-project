@@ -6,7 +6,8 @@ type Todo = {
   completed: boolean
 }
 
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:4000')
+//const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:4000')
+const API_URL = 'http://192.168.159.131:4450'
 
 export function App() {
   const [todos, setTodos] = useState<Todo[]>([])
