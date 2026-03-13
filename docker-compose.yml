@@ -19,14 +19,31 @@ services:
     build: ./backend
     restart: unless-stopped
     ports:
-      - "4450:4450"
+      - "${PORT:-4450}:4450"
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres-db:5432/todo_db
-      PORT: 4450
+      NODE_ENV: "development"
+      WATCHPACK_POLLING: "true"
+      DATABASE_URL: "postgresql://postgres:postgres@postgres-db:5432/todo_db"
+      PORT: ${PORT:-4450}
     depends_on:
       - postgres-db
     networks:
       - app-network
+    develop:
+      watch:
+        # ✅ ПРАВИЛЬНЫЙ порядок: path → action → target
+        - path: ./backend/src          # Синхронизация src
+          action: sync
+          target: /app/src
+          ignore:
+            - "**/*.test.js"
+            - "**/__tests__/**"
+        - path: ./backend/package.json  # Rebuild deps
+          action: rebuild
+        - path: ./backend/package-lock.json
+          action: rebuild
+        - path: ./backend/tsconfig.json
+          action: rebuild
 
   frontend:
     container_name: frontend
@@ -38,6 +55,10 @@ services:
       - app_backend
     networks:
       - app-network
+    develop:
+      watch:
+        - path: ./frontend
+          action: rebuild
 
 volumes:
   postgres_data:

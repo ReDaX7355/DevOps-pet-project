@@ -1,7 +1,7 @@
 FROM node:20.19-alpine
 
-ENV DATABASE_URL=postgresql://postgres:postgres@postgres-db:5432/todo_db
-ENV PORT=4450
+ENV DATABASE_URL=${DATABASE_URL}
+ENV PORT=${PORT}
 
 WORKDIR /app
 
