@@ -10,9 +10,19 @@ const { Pool } = pkg
 const app = express()
 const port = process.env.PORT || 4000
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-})
+let pool = null
+async function getPool() {
+  if (!pool) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL required')
+    }
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+    })
+  }
+  return pool
+}
+
 
 app.use(cors())
 app.use(express.json())
@@ -26,6 +36,18 @@ async function ensureSchema() {
     );
   `)
 }
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health', async (_req, res) => {
+  try{
+    res.status(200)
+  } catch {
+    res.stauts(500).json({ error: 'Feiled to health check' })
+  }
+})
 
 app.get('/api/todos', async (_req, res) => {
   try {
@@ -91,16 +113,34 @@ app.delete('/api/todos/:id', async (req, res) => {
   }
 })
 
-;(async () => {
-  try {
-    await ensureSchema()
-    app.listen(port, () => {
-      console.log(`Server listening on port ${port}`)
-    })
-  } catch (err) {
-    console.error('Failed to initialize database schema')
-    console.error(err)
-    process.exit(1)
-  }
-})()
+;
 
+if (import.meta.url === `file://${process.argv[1]}`) {
+  getPool()
+    .then(ensureSchema)
+    .then(() => {
+      app.listen(port, () => {
+        console.log(`🚀 Server: http://localhost:${port}`)
+      })
+    })
+    .catch(err => {
+      console.error('Failed to start:', err)
+      process.exit(1)
+    })
+}
+
+//(async () => {
+//  try {
+//    await ensureSchema()
+//    app.listen(port, () => {
+//      console.log(`Server listening on port ${port}`)
+//    })
+//  } catch (err) {
+//    console.error('Failed to initialize database schema')
+//    console.error(err)
+//    process.exit(1)
+//  }
+//})()
+
+
+export default app;

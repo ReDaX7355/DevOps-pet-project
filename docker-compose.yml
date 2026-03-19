@@ -23,7 +23,7 @@ services:
     environment:
       NODE_ENV: "development"
       WATCHPACK_POLLING: "true"
-      DATABASE_URL: "postgresql://postgres:postgres@postgres-db:5432/todo_db"
+      DATABASE_URL: ${DATABASE_URL}
       PORT: ${PORT:-4450}
     depends_on:
       - postgres-db
