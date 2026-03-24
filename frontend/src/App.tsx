@@ -7,8 +7,7 @@ type Todo = {
 }
 
 //Необходимо указать IP гостевой ОС
-//const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:4000')
-const API_URL = 'http://192.168.159.131:4450'
+const API_URL = '/api'
 
 export function App() {
   const [todos, setTodos] = useState<Todo[]>([])
@@ -20,7 +19,7 @@ export function App() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(`${API_URL}/api/todos`)
+      const res = await fetch(`${API_URL}/todos`)
       if (!res.ok) throw new Error('Failed to load todos')
       const data: Todo[] = await res.json()
       setTodos(data)
@@ -42,7 +41,7 @@ export function App() {
 
     try {
       setError(null)
-      const res = await fetch(`${API_URL}/api/todos`, {
+      const res = await fetch(`${API_URL}/todos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: trimmed }),
@@ -59,7 +58,7 @@ export function App() {
   async function toggleTodo(todo: Todo) {
     try {
       setError(null)
-      const res = await fetch(`${API_URL}/api/todos/${todo.id}`, {
+      const res = await fetch(`${API_URL}/todos/${todo.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ completed: !todo.completed }),
@@ -75,7 +74,7 @@ export function App() {
   async function deleteTodo(id: number) {
     try {
       setError(null)
-      const res = await fetch(`${API_URL}/api/todos/${id}`, {
+      const res = await fetch(`${API_URL}/todos/${id}`, {
         method: 'DELETE',
       })
       if (!res.ok && res.status !== 204) throw new Error('Failed to delete todo')

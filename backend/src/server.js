@@ -49,7 +49,7 @@ app.get('/api/health', async (_req, res) => {
   }
 })
 
-app.get('/api/todos', async (_req, res) => {
+app.get('/todos', async (_req, res) => {
   try {
     const result = await pool.query('SELECT id, title, completed FROM todos ORDER BY id DESC')
     res.json(result.rows)
@@ -59,7 +59,7 @@ app.get('/api/todos', async (_req, res) => {
   }
 })
 
-app.post('/api/todos', async (req, res) => {
+app.post('/todos', async (req, res) => {
   const { title } = req.body
   if (!title || typeof title !== 'string') {
     return res.status(400).json({ error: 'Title is required' })
@@ -77,7 +77,7 @@ app.post('/api/todos', async (req, res) => {
   }
 })
 
-app.patch('/api/todos/:id', async (req, res) => {
+app.patch('/todos/:id', async (req, res) => {
   const { id } = req.params
   const { completed } = req.body
 
@@ -98,7 +98,7 @@ app.patch('/api/todos/:id', async (req, res) => {
   }
 })
 
-app.delete('/api/todos/:id', async (req, res) => {
+app.delete('/todos/:id', async (req, res) => {
   const { id } = req.params
 
   try {
