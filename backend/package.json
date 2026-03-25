@@ -5,11 +5,10 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "dev": "node --watch src/index.js",
-    "dev:nodemon": "nodemon src/index.js",
+    "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest",
-    "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch"
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -21,8 +20,7 @@
     "pg": "^8.19.0"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "jest": "^30.3.0",
-    "supertest": "^7.2.2"
+    "supertest": "^7.1.4",
+    "vitest": "^4.1.1"
   }
 }
