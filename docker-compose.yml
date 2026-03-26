@@ -50,7 +50,7 @@ services:
     build: ./frontend
     restart: unless-stopped
     expose:
-      - "3000"
+      - "80"
     depends_on:
       - app_backend
     networks:
