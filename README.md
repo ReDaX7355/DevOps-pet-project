@@ -12,6 +12,7 @@
 - Frontend: React Vite + Tailwind
 - Backend: NodeJS + express
 - DB: Postgress
+- Nginx - реверс прокси для приложения
 
 ## 1. Создание Docker конфигураций
 Далее создаю docker файлы для каждого сегмента приложения (Frontend, Backend). Для DB не создается dockerfile, создание контейнера производится в общем конфиге docker-compose.
@@ -19,5 +20,25 @@
 
 Добавляю проксирование через отдельный контейнер Nginx, nginx.conf находится в главном каталоге.
 
-## 2. CI/CD GitHub Actions 
-Добавил Action, который собирает образы backend и frontend и пушит их в GHCR (GitHub Container Registry).
+## 2. CI/CD GitHub Actions
+Добавил workflow для сборки образов backend и frontend и пуша их в GHCR (GitHub Container Registry).
+Затем добавил deploy workflow, который следит за пушами в ветку main и сразу деплоит прилежение на указанный сервер в секретах ниже.
+ 
+#### Настройка секретов GitHub
+Для работы workflow необходимо добавить Secrets в репозиторий:
+• SERVER_HOST — IP или hostname сервера.
+• SERVER_USER — пользователь SSH.
+• SSH_PRIVATE_KEY — приватный ключ для доступа по SSH.
+• DATABASE_URL — строка подключения к PostgreSQL.
+• PORT_BACKEND — порт запуска backend.
+
+Workflow автоматически подставляет их при сборке и деплое.
+
+#### Использование
+1. Пушим изменения в ветку main.
+2. Workflow соберёт образы и обновит контейнеры на сервере.
+3. Проверяем работу приложения через Nginx:
+
+http://SERVER_IP/      → фронтенд
+http://SERVER_IP/api/  → backend API
+
