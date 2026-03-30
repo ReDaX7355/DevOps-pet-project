@@ -1,0 +1,31 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: ["merge/main-and-docker-setup"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "ReDaX7355" --password-stdin
+
+      - name: Build backend image
+        run: |
+          docker build -t ghcr.io/${{github.repository_owner}}/backend:latest ./backend
+          docker push ghcr.io/${{github.repository_owner}}/backend:latest
+
+      - name: Build frontend image
+        run: |
+          docker build -t ghcr.io/${{github.repository_owner}}/frontend:latest ./frontend
+          docker push ghcr.io/${{github.repository_owner}}/frontend:latest
