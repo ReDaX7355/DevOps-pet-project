@@ -26,12 +26,11 @@
  
 #### Настройка секретов GitHub
 Для работы workflow необходимо добавить Secrets в репозиторий:
-• SERVER_HOST — IP или hostname сервера.
-• SERVER_USER — пользователь SSH.
-• SSH_PRIVATE_KEY — приватный ключ для доступа по SSH.
-• DATABASE_URL — строка подключения к PostgreSQL.
-• PORT_BACKEND — порт запуска backend.
-
+- SERVER_HOST — IP или hostname сервера.
+- SERVER_USER — пользователь SSH.
+- SSH_PRIVATE_KEY — приватный ключ для доступа по SSH.
+- DATABASE_URL — строка подключения к PostgreSQL.
+- PORT_BACKEND — порт запуска backend.
 Workflow автоматически подставляет их при сборке и деплое.
 
 #### Использование
