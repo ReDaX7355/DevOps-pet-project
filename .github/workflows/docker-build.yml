@@ -23,15 +23,14 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "ReDaX7355" --password-stdin
 
-      - name: Set lowercase owner
-        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER, ,}" >> $GITHUB_ENV
-
       - name: Build backend image
         run: |
-          docker build -t ghcr.io/${{env.OWNER_LC}}/backend:latest ./backend
-          docker push ghcr.io/${{env.OWNER_LC}}/backend:latest
+          OWNER_LC=${GITHUB_REPOSITORY_OWNER, ,}
+          docker build -t ghcr.io/$OWNER_LC/backend:latest ./backend
+          docker push ghcr.io/$OWNER_LC/backend:latest
 
       - name: Build frontend image
         run: |
-          docker build -t ghcr.io/${{env.OWNER_LC}}/frontend:latest ./frontend
-          docker push ghcr.io/${{env.OWNER_LC}}/frontend:latest
+          OWNER_LC=${GITHUB_REPOSITORY_OWNER, ,}
+          docker build -t ghcr.io/$OWNER_LC/frontend:latest ./frontend
+          docker push ghcr.io/$OWNER_LC/frontend:latest
