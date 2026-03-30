@@ -35,7 +35,8 @@ jobs:
       - name: Build frontend image
         run: |
           OWNER_LC=$( echo GITHUB_REPOSITORY_OWNER | tr '[:upper:]' '[:lower:]')
+          docker build \
           --build_arg DATABASE_URL=${{ secrets.DATABASE_URL}} \
           --build_arg PORT=${{ secrets.PORT_BACKEND}} \
-          docker build -t ghcr.io/$OWNER_LC/frontend:latest ./frontend
+          -t ghcr.io/$OWNER_LC/frontend:latest ./frontend
           docker push ghcr.io/$OWNER_LC/frontend:latest
