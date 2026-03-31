@@ -15,5 +15,5 @@ EXPOSE 5000
 
 CMD ["npm", "start"]
 
-HEALTHCHECK --interval=10s --timeout=3s --retries=5s \
+HEALTHCHECK --interval=10s --timeout=3s --retries=5 \
 CMD curl -f http://localhost:5000/health || exit 1
