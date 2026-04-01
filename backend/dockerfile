@@ -1,19 +1,25 @@
-FROM node:24.14-alpine
-
-ENV DATABASE_URL=${DATABASE_URL}
-ENV PORT=${PORT}
-
+FROM node:20-alpine AS deps
 WORKDIR /app
-
 COPY package.json package-lock.json ./
-
 RUN npm ci --omit=dev
 
-COPY ./src ./src
+FROM node:20-alpine AS runner
+WORKDIR /app
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY src ./src
+COPY package.json ./
+
+ENV NODE_ENV=production
+ENV PORT=5000
+
+USER appuser
 
 EXPOSE 5000
 
-CMD ["npm", "start"]
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+  CMD wget -qO- http://localhost:5000/health || exit 1
 
-HEALTHCHECK --interval=10s --timeout=3s --retries=5 \
-CMD curl -f http://localhost:5000/health || exit 1
+CMD ["node", "src/server.js"]
+
