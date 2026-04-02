@@ -29,6 +29,9 @@
 - SERVER_HOST — IP или hostname сервера.
 - SERVER_USER — пользователь SSH.
 - SSH_PRIVATE_KEY — приватный ключ для доступа по SSH.
+- POSTGRES_DB — имя БД в Postgres
+- POSTGRES_USER — имя пользователя БД Postgres
+- POSTGRES_PASSWORD — пароль пользователя БД Postgres
 - DATABASE_URL — строка подключения к PostgreSQL.
 - PORT_BACKEND — порт запуска backend.
 Workflow автоматически подставляет их при сборке и деплое.
@@ -40,4 +43,15 @@ Workflow автоматически подставляет их при сбор�
 
 http://SERVER_IP/      → фронтенд
 http://SERVER_IP/api/  → backend API
+
+Далее настроил CD (dev-сценарий): я эмулировал деплой как на обычный сервер — через docker pull и docker compose up -d, без зависимости от наличия кода проекта на сервере.
+Отдельно продумал прод-сценарий с self-hosted runner, который не удалось реализовать из-за отсутствия внешнего IP, но конфигурация под него подготовлена.
+
+В процессе решил проблемы с:
+• регистром имени репозитория для GHCR,
+• рассинхроном package.json и package-lock.json,
+• передачей переменных через Secrets,
+• структурой Dockerfile и путями к src,
+• триггерами workflow по веткам.
+
 
