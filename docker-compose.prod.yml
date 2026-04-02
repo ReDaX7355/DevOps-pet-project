@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   postgres-db:
     container_name: postgres-db
@@ -11,8 +9,8 @@ services:
       timeout: 5s
       retries: 5
     environment:
-      POSTGRES_DB: todo_db
-      POSTGRES_USER: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRESS_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -25,7 +23,7 @@ services:
     restart: always
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      PORT: 5000
+      PORT: ${PORT_BACKEND}
     depends_on:
       - postgres-db
     networks:
