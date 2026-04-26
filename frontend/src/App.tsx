@@ -6,19 +6,22 @@ type Todo = {
   completed: boolean
 }
 
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:4000')
+//Необходимо указать IP гостевой ОС
+const API_URL = '/api'
 
 export function App() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [togglingIds, setTogglingIds] = useState<Set<number>>(() => new Set())
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(() => new Set())
 
   async function loadTodos() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(`${API_URL}/api/todos`)
+      const res = await fetch(`${API_URL}/todos`)
       if (!res.ok) throw new Error('Failed to load todos')
       const data: Todo[] = await res.json()
       setTodos(data)
@@ -40,7 +43,7 @@ export function App() {
 
     try {
       setError(null)
-      const res = await fetch(`${API_URL}/api/todos`, {
+      const res = await fetch(`${API_URL}/todos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: trimmed }),
@@ -55,31 +58,70 @@ export function App() {
   }
 
   async function toggleTodo(todo: Todo) {
+    if (togglingIds.has(todo.id)) return
+    const optimisticCompleted = !todo.completed
+
+    setTogglingIds((prev) => {
+      const next = new Set(prev)
+      next.add(todo.id)
+      return next
+    })
+
+    // Оптимистично обновляем UI сразу, чтобы не "лагало" из-за сети/БД.
+    setTodos((prev) => prev.map((t) => (t.id === todo.id ? { ...t, completed: optimisticCompleted } : t)))
+
     try {
       setError(null)
-      const res = await fetch(`${API_URL}/api/todos/${todo.id}`, {
+      const res = await fetch(`${API_URL}/todos/${todo.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !todo.completed }),
+        body: JSON.stringify({ completed: optimisticCompleted }),
       })
       if (!res.ok) throw new Error('Failed to update todo')
       const updated: Todo = await res.json()
       setTodos((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
     } catch (e) {
+      // Откат оптимистичного апдейта.
+      setTodos((prev) => prev.map((t) => (t.id === todo.id ? { ...t, completed: todo.completed } : t)))
       setError(e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setTogglingIds((prev) => {
+        const next = new Set(prev)
+        next.delete(todo.id)
+        return next
+      })
     }
   }
 
   async function deleteTodo(id: number) {
+    if (deletingIds.has(id)) return
+    const snapshot = todos
+
+    setDeletingIds((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
+
+    // Оптимистично удаляем из UI сразу.
+    setTodos((prev) => prev.filter((t) => t.id !== id))
+
     try {
       setError(null)
-      const res = await fetch(`${API_URL}/api/todos/${id}`, {
+      const res = await fetch(`${API_URL}/todos/${id}`, {
         method: 'DELETE',
       })
       if (!res.ok && res.status !== 204) throw new Error('Failed to delete todo')
-      setTodos((prev) => prev.filter((t) => t.id !== id))
     } catch (e) {
+      // Откат оптимистичного удаления.
+      setTodos(snapshot)
       setError(e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setDeletingIds((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
     }
   }
 
@@ -118,7 +160,8 @@ export function App() {
                   <button
                     type="button"
                     onClick={() => toggleTodo(todo)}
-                    className="h-5 w-5 rounded border border-slate-500 flex items-center justify-center bg-slate-900"
+                    disabled={togglingIds.has(todo.id)}
+                    className="h-5 w-5 rounded border border-slate-500 flex items-center justify-center bg-slate-900 disabled:opacity-50"
                   >
                     {todo.completed && <span className="h-3 w-3 rounded bg-sky-400" />}
                   </button>
@@ -132,7 +175,8 @@ export function App() {
                   <button
                     type="button"
                     onClick={() => deleteTodo(todo.id)}
-                    className="text-xs text-red-400 hover:text-red-300"
+                    disabled={deletingIds.has(todo.id)}
+                    className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
                   >
                     Удалить
                   </button>
