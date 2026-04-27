@@ -1,0 +1,23 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: "default"
+  group_by: ["alertname", "instance"]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+
+  routes:
+    - match:
+        severity: page
+      reciver: page
+
+    - match:
+        severity: warning
+      reciver: warning
+
+receivers:
+  - name: "default"
+    webhook_configs:
+      - url: "http://localhost:5001/alerts"
