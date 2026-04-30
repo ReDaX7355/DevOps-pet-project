@@ -59,7 +59,7 @@ jobs:
           docker build \
           --build-arg DATABASE_URL=${{ secrets.DATABASE_URL}} \
           --build-arg PORT=${{ secrets.PORT_BACKEND}} \
-          -t ghcr.io/$OWNER_LC/app_backend:latest ./backend
+          -t ghcr.io/$OWNER_LC/backend:latest ./backend
           docker push ghcr.io/$OWNER_LC/backend:latest
 
       - name: Build frontend image
