@@ -2,9 +2,39 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: ["merge/main-and-docker-setup"]
+    branches:
+      - dev
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js for backend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend deps
+        working_directory: ./backend
+        run: npm install
+
+      - name: Run backend tests
+        working_directory: ./backend
+        run: npm test
+
+      - name: Install frontend deps
+        working_directory: ./frontend
+        run: npm install
+
+      - name: Run frontend tests
+        working_directory: ./frontend
+        run: npm test
+
+
   build:
     runs-on: ubuntu-latest
 

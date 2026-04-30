@@ -1,5 +1,10 @@
 global:
   resolve_timeout: 5m
+  smtp_smarthost: 'mail.example.com:587'
+  smtp_from: 'mail@example.com'
+  smtp_auth_username: 'mail@example.com'
+  smtp_auth_password: 'example_pass'
+  smtp_require_tls: true
 
 route:
   receiver: "default"
@@ -11,13 +16,23 @@ route:
   routes:
     - match:
         severity: page
-      reciver: page
+      receiver: page
 
     - match:
         severity: warning
-      reciver: warning
+      receiver: warning
+
+    - match:
+        severity: critical
+      receiver: critical
 
 receivers:
   - name: "default"
     webhook_configs:
       - url: "http://localhost:5001/alerts"
+    email_configs:
+    - to: 'mail@example.com'
+      send_resolved: true
+  - name: page
+  - name: warning
+  - name: critical
