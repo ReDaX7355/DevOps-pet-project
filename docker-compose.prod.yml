@@ -19,7 +19,7 @@ services:
 
   app_backend:
     container_name: app_backend
-    image: ghcr.io/redax7355/app_backend:latest
+    image: ghcr.io/redax7355/app_backend:${VERSION}
     restart: always
     environment:
       DATABASE_URL: ${DATABASE_URL}
@@ -31,7 +31,7 @@ services:
 
   frontend:
     container_name: frontend
-    image: ghcr.io/redax7355/frontend:latest
+    image: ghcr.io/redax7355/frontend:${VERSION}
     restart: always
     networks:
       - app-network
