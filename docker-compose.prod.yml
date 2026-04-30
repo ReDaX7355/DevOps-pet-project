@@ -37,6 +37,7 @@ services:
       - app-network
 
   nginx:
+    container_name: nginx
     image: nginx:latest
     restart: always
     ports:
