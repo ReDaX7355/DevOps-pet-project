@@ -1,0 +1,51 @@
+name: Release and Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract version
+      id: vars
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> GITHUB_OUTPUT
+
+      - name: Login GHCR
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retag backend
+        run: |
+          docker pull ghcr.io/${{ github.repository_owner }}/backend:latest
+          docker tag ghcr.io/${{ github.repository_owner }}/backend:latest \
+            ghcr.io/${{ github.repository_owner }}/backend:${{ steps.vars.outputs.VERSION }}
+          docker push ghcr.io/${{ github.repository_owner }}/backend:${{ steps.vars.outputs.VERSION }}
+
+      - name: Retag frontend
+        run: |
+          docker pull ghcr.io/${{ github.repository_owner }}/frontend:latest
+          docker tag ghcr.io/${{ github.repository_owner }}/frontend:latest \
+            ghcr.io/${{ github.repository_owner }}/frontend:${{ steps.vars.outputs.VERSION }}
+          docker push ghcr.io/${{ github.repository_owner }}/frontend:${{ steps.vars.outputs.VERSION }}
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            VERSION=${{ steps.vars.outputs.VERSION }}
+            export VERSION
+
+            cd /home/${{ secrets.SERVER_USER }}/DevOps-pet-project
+
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
