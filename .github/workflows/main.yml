@@ -19,7 +19,7 @@ jobs:
 
       - name: Set SHA
         id: vars
-        run: echo "SHA=$(git rev-parse --short HEAD)" >> GITHUB_OUTPUT
+        run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Log in to GHCR
         uses: docker/login-action@v2
