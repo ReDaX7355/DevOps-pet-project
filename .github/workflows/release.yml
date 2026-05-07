@@ -8,32 +8,39 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Extract version
-      id: vars
-      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> GITHUB_OUTPUT
+        id: vars
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Login GHCR
-      uses: docker/login-action@v2
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Normalize owner
+        id: owner
+        run: echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
 
       - name: Retag backend
         run: |
-          docker pull ghcr.io/${{ github.repository_owner }}/backend:latest
-          docker tag ghcr.io/${{ github.repository_owner }}/backend:latest \
-            ghcr.io/${{ github.repository_owner }}/backend:${{ steps.vars.outputs.VERSION }}
-          docker push ghcr.io/${{ github.repository_owner }}/backend:${{ steps.vars.outputs.VERSION }}
+          docker pull ghcr.io/${{ steps.owner.outputs.OWNER }}/backend:latest
+          docker tag ghcr.io/${{ steps.owner.outputs.OWNER }}/backend:latest \
+            ghcr.io/${{ steps.owner.outputs.OWNER }}/backend:${{ steps.vars.outputs.VERSION }}
+          docker push ghcr.io/${{ steps.owner.outputs.OWNER }}/backend:${{ steps.vars.outputs.VERSION }}
 
       - name: Retag frontend
         run: |
-          docker pull ghcr.io/${{ github.repository_owner }}/frontend:latest
-          docker tag ghcr.io/${{ github.repository_owner }}/frontend:latest \
-            ghcr.io/${{ github.repository_owner }}/frontend:${{ steps.vars.outputs.VERSION }}
-          docker push ghcr.io/${{ github.repository_owner }}/frontend:${{ steps.vars.outputs.VERSION }}
+          docker pull ghcr.io/${{ steps.owner.outputs.OWNER }}/frontend:latest
+          docker tag ghcr.io/${{ steps.owner.outputs.OWNER }}/frontend:latest \
+            ghcr.io/${{ steps.owner.outputs.OWNER }}/frontend:${{ steps.vars.outputs.VERSION }}
+          docker push ghcr.io/${{ steps.owner.outputs.OWNER }}/frontend:${{ steps.vars.outputs.VERSION }}
 
       - name: Deploy
         uses: appleboy/ssh-action@v0.1.9
@@ -44,8 +51,6 @@ jobs:
           script: |
             VERSION=${{ steps.vars.outputs.VERSION }}
             export VERSION
-
             cd /home/${{ secrets.SERVER_USER }}/DevOps-pet-project
-
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
