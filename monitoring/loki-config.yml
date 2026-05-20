@@ -16,9 +16,9 @@ ingester:
 schema_config:
   configs:
     - from: 2020-10-24
-      store: boltdb-shipper
+      store: tsdb
       object_store: filesystem
-      schema: v11
+      schema: v13
       index:
         prefix: index_
         period: 24h
@@ -34,12 +34,10 @@ limits_config:
   retention_period: 168h  # 7 дней
   allow_structured_metadata: false
 
-table_manager:
-  retention_deletes_enabled: true
-  retention_period: 168h  # 7 дней
+compactor:
+  working_directory: /loki/compactor
+  shared_store: filesystem
+  retention_enabled: true
 
 query_scheduler:
   max_outstanding_requests_per_tenant: 2048
-
-common:
-  path_prefix: /tmp/loki

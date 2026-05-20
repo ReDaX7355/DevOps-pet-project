@@ -75,7 +75,7 @@ docker compose -f ./monitoring/docker-compose.yml up -d
 - PORT_BACKEND
 
 Для prod:
-- GITHUB_TOKEN (пароль от Github)
+- GITHUB_TOKEN (отдельный пароль от Github, создается в настройках)
 - SERVER_HOST
 - SSH_PRIVATE_KEY
 - SERVER_USER
@@ -96,17 +96,42 @@ docker compose -f ./monitoring/docker-compose.yml up -d
 - Promtail - чтение и сбор логов системы
 - Loki - хранение системных логов и их отображение
 - Grafana - вывод метрик в графики и дашборды
-- cAdvisor и node-exporter - Сбор статистики docker контейнеров и ресурсов системы
+- cAdvisor и node-exporter - Сбор статистики docker контейнеров и ресурсов системы соответственно
+
+В каталоге "monitoring" находятся готовые стартовые конфиги для всех сервисов.
 
 ### Логи (Loki + Promtail)
 - централизованный сбор логов
 - контейнерные логи
 
 ### Алерты
-Также в Prometheus были настроены базовые алерты и установлен alertmanager для сбора и отправки оповещений.
+В Prometheus были настроены базовые алерты и установлен alertmanager для сбора и отправки оповещений.
+Была протестирована отправка оповещений по почте через smtp Yandex.
+
+В конфиге monitoring/alertmanager/alertmanager.yml можно задать настройки отправки оповещений.
+
+``` yaml
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'mail.example.com:587' # SMTP сервер
+  smtp_from: 'mail@example.com' # почта - от кого
+  smtp_auth_username: 'mail@example.com' # имя пользователядля доступа к почтовому серверу
+  smtp_auth_password: 'example_pass' # не пароль от почты, а пароль приложения для доступа
+  smtp_require_tls: true
+...
+receivers:
+  ...
+    email_configs:
+    - to: 'mail@example.com' # куда отправлять уведомления
+      send_resolved: true
+  # Ниже под каждым именем, такжже можно настроить отправку уведомлений
+  - name: page
+  - name: warning
+  - name: critical
+```
 
 ## Тестирование 
-У веб приложения присутствуют базовые тесты для примера.
+У веб приложения присутствуют базовые unit и integration тесты для примера и работы с ними.
 
 ---
 
