@@ -1,0 +1,7 @@
+selectel_account  = "" # номер аккаунта — правый верхний угол панели
+selectel_username = "" # имя сервисного пользователя
+selectel_password = "" # пароль сервисного пользователя
+selectel_region   = "" # регион
+project_id        = "" # ID проекта
+ssh_key_name      = "" # имя SSH ключа в Selectel
+allowed_ssh_ip    = "" # IP для доступа к серверам
