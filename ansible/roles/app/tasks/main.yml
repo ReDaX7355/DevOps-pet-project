@@ -1,0 +1,36 @@
+---
+- name: Login to GHCR
+  community.docker.docker_login:
+    registry: ghcr.io
+    username: "{{ghcr_username}}"
+    password: "{{ghcr_password}}"
+
+- name: Create project directory
+  file:
+    path: /root/app
+    state: directory
+    mode: '0755'
+
+- name: Copy docker-compose
+  copy:
+    src: docker-compose.prod.yml
+    dest: /root/app/docker-compose.prod.yml
+
+- name: Copy nginx.conf
+  copy:
+    src: nginx.conf
+    dest: /root/app/nginx.conf
+
+- name: Copy .env
+  copy:
+    src: .env
+    dest: /root/app/.env
+    mode: '0600'
+
+- name: Start containers
+  community.docker.docker_compose_v2:
+    project_src: /root/app
+    files:
+      - docker-compose.prod.yml
+    state: present
+    pull: always

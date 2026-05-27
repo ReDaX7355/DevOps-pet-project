@@ -1,0 +1,57 @@
+services:
+  postgres-db:
+    container_name: postgres-db
+    image: postgres:16
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRESS_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  app_backend:
+    container_name: app_backend
+    image: ghcr.io/redax7355/app_backend:${VERSION}
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${PORT_BACKEND}
+    depends_on:
+      - postgres-db
+    networks:
+      - app-network
+
+  frontend:
+    container_name: frontend
+    image: ghcr.io/redax7355/frontend:${VERSION}
+    restart: always
+    networks:
+      - app-network
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - app_backend
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
