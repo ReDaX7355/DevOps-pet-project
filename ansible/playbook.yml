@@ -1,0 +1,14 @@
+---
+- name: Setup app server
+  hosts: app
+  become: true
+  roles:
+    - docker
+    - app
+
+- name: Setup monitoring server
+  hosts: monitoring
+  become: true
+  roles:
+    - docker
+    - monitoring
