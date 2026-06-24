@@ -64,6 +64,28 @@ resource "openstack_networking_secgroup_rule_v2" "app_https" {
   remote_ip_prefix  = "0.0.0.0/0"
 }
 
+# доступ к cAdvisor
+resource "openstack_networking_secgroup_rule_v2" "cAdvisor" {
+  security_group_id = openstack_networking_secgroup_v2.app.id
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 8080
+  port_range_max    = 8080
+  remote_ip_prefix  = "192.168.10.0/24"
+}
+
+# доступ к node-exporter
+resource "openstack_networking_secgroup_rule_v2" "node-exporter" {
+  security_group_id = openstack_networking_secgroup_v2.app.id
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 9100
+  port_range_max    = 9100
+  remote_ip_prefix  = "192.168.10.0/24"
+}
+
 # Security group для VM с мониторингом
 resource "openstack_networking_secgroup_v2" "monitoring" {
   name = "monitoring-secgroup"

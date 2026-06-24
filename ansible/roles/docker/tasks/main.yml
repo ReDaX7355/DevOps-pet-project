@@ -6,8 +6,20 @@
       - ca-certificates
       - curl
       - gnupg
+      - python3
+      - python3-pip
+      - python3-requests
+      - python3-docker
     state: present
     update_cache: true
+
+- name: Install Python dependencies for Docker modules
+  ansible.builtin.package:
+    name:
+      - python3-requests
+      - python3-docker
+    state: present
+  become: true
 
 - name: Install Docker
   apt:

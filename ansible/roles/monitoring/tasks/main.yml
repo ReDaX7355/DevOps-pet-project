@@ -1,49 +1,64 @@
 ---
-- name: Create monitoring directory
-  file:
-    path: /root/monitoring
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
     state: directory
     mode: '0755'
+  become: true
+  with_items:
+    - /root/monitoring
+    - /root/monitoring/prometheus
+    - /root/monitoring/grafana
+    - /root/monitoring/alertmanager
 
 - name: Copy docker-compose
-  copy:
+  ansible.builtin.copy:
     src: docker-compose.yml
     dest: /root/monitoring/docker-compose.yml
 
 - name: Copy loki config
-  copy:
+  ansible.builtin.copy:
     src: loki-config.yml
     dest: /root/monitoring/loki-config.yml
 
 - name: Copy promtail config
-  copy:
+  ansible.builtin.copy:
     src: promtail-config.yml
     dest: /root/monitoring/promtail-config.yml
 
-- name: Copy prometheus config
-  copy:
-    src: prometheus/prometheus-config.yml
-    dest: /root/monitoring/prometheus/prometheus-config.yml
+#- name: Copy prometheus config
+#  ansible.builtin.copy:
+#    src: prometheus/prometheus.yml
+#    dest: /root/monitoring/prometheus/prometheus.yml
 
 - name: Copy prometheus config
-  copy:
+  ansible.builtin.copy:
     src: prometheus/rules.yml
     dest: /root/monitoring/prometheus/rules.yml
 
 - name: Copy alertmanager config
-  copy:
+  ansible.builtin.copy:
     src: alertmanager/alertmanager.yml
     dest: /root/monitoring/alertmanager/alertmanager.yml
 
 - name: Copy grafana provisioning
-  copy:
-    src: grafana/
-    dest: /root/monitoring/grafana/
+  ansible.builtin.copy:
+    src: grafana
+    dest: /root/monitoring/
+    mode: '0755'
+    directory_mode: '0755'
+
+- name: Generate prometheus config from template
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /root/monitoring/prometheus/prometheus.yml
+    mode: '0644'
+  become: true
 
 - name: Start monitoring containers
   community.docker.docker_compose_v2:
     project_src: /root/monitoring
     files:
-      - docker-copmose.yml
+      - docker-compose.yml
     state: present
     pull: always
