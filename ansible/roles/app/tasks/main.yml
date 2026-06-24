@@ -64,5 +64,3 @@
       - docker-compose.prod.yml
     state: present
     pull: always
-  environment:
-    VERSION: "{{ app_version | default('latest') }}"
