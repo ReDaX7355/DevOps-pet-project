@@ -38,13 +38,13 @@ minikube start --driver=docker
 minikube addons enable ingress
 
 # Применить манифесты по порядку
-kubectl apply -f namespace.yaml
-kubectl apply -f postgres-secret.yaml
-kubectl apply -f backend-configmap.yaml
-kubectl apply -f postgres.yaml
-kubectl apply -f backend.yaml
-kubectl apply -f frontend.yaml
-kubectl apply -f ingress.yaml
+kubectl apply -f namespace.yml
+kubectl apply -f postgres-secret.yml
+kubectl apply -f backend-configmap.yml
+kubectl apply -f postgres.yml
+kubectl apply -f backend.yml
+kubectl apply -f frontend.yml
+kubectl apply -f ingress.yml
 
 # Проверить статус
 kubectl get pods -n todo-app
@@ -107,13 +107,13 @@ Pod'ы пересоздаются и меняют IP.
 
 | Файл | Объекты |
 |---|---|
-| `namespace.yaml` | Namespace `todo-app` |
-| `postgres-secret.yaml` | Secret с паролями и строкой подключения |
-| `backend-configmap.yaml` | ConfigMap с переменными backend |
-| `postgres.yaml` | PVC, Deployment, Service для PostgreSQL |
-| `backend-deployment.yaml` | Deployment, Service backend с probes и лимитами |
-| `frontend-deployment.yaml` | Deployment, Service frontend (2 реплики) |
-| `ingress.yaml` | Ingress с маршрутизацией `/api` и `/` |
+| `namespace.yml` | Namespace `todo-app` |
+| `postgres-secret.yml` | Secret с паролями и строкой подключения |
+| `backend-configmap.yml` | ConfigMap с переменными backend |
+| `postgres.yml` | PVC, Deployment, Service для PostgreSQL |
+| `backend.yml` | Deployment, Service backend с probes и лимитами |
+| `frontend.yml` | Deployment, Service frontend (2 реплики) |
+| `ingress.yml` | Ingress с маршрутизацией `/api` и `/` |
 
 ## Полезные команды
 
