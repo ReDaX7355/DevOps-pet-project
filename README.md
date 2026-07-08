@@ -5,7 +5,7 @@
 Он предназначен для демонстрации навыков, полученных путем изучения методологии DevOps в системном администрировании, и показывает полный DevOps-пайплайн для небольшого веб-приложения:
 
 - контейнеризация веб-приложения (frontend и backend)
-- оркестрация через Docker Compose
+- оркестрация через Docker Compose, Kubernetes
 - CI/CD через GitHub Actions
 - reverse proxy (Nginx)
 - система мониторинга и логирования
@@ -215,6 +215,18 @@ cd ../ansible && ansible-playbook playbook.yml \
 - Сервер 2: Prometheus + Grafana + Loki (+ доп. модули)
 
 
+## Kubernetes
+
+Помимо основной инфраструктуры на Docker Compose, в проекте есть
+миграция на Kubernetes - доступна в отдельной ветке
+['k8s'](https://github.com/ReDaX7355/DevOps-pet-project/tree/k8s)
+
+Там реализован полный перенос стека приложения с использованием
+Deployment, Service, Ingress, ConfigMap/Secret, health checks, PVC.
+Подробное описание в README этой ветки.
+
+
+
 ---
 
 ## Какие навыки демонстрирует проект
@@ -227,6 +239,7 @@ cd ../ansible && ansible-playbook playbook.yml \
 - reverse proxy конфигурация (Nginx)
 - автоматизация создания облачной инфраструктуры с помощью Terraform
 - автоматизированная настройка окружения и деплой на удаленные серверы с помощью Ansible
+- Создание кластера и оркестрация приложения через Kubernetes
 
 
 
