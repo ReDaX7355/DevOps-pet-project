@@ -1,21 +1,23 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Service
 metadata:
-  name: postgres-pvc
+  name: postgres-db
   namespace: todo-app
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+  clusterIP: None
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: postgres
   namespace: todo-app
 spec:
+  serviceName: postgres-db
   replicas: 1
   selector:
     matchLabels:
@@ -65,20 +67,13 @@ spec:
                 - postgres
             initialDelaySeconds: 5
             periodSeconds: 5
-      volumes:
-        - name: postgres-storage
-          persistentVolumeClaim:
-            claimName: postgres-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres-db
-  namespace: todo-app
-spec:
-  selector:
-    app: postgres
-  ports:
-    - port: 5432
-      targetPort: 5432
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
 

@@ -103,6 +103,15 @@ Pod'ы пересоздаются и меняют IP.
 Это стандартная практика — разделяет ресурсы проекта от служебных
 (`ingress-nginx`, `kube-system`) и других приложений в кластере.
 
+### StatefulSet - для PostgreSQL, вместо Deployment
+База данных развернута как `StatefulSet`, а не `Deployment`, так как это
+stateful-комепонент:
+
+- **Стабильное имя Pod** - `postgres-0` не меняется при пересоздании
+- **volumeClaimTemplates** - StatefulSet сам создает PVC для каждой реплики,
+без ручного создания.
+- **HeadlessService** - дает Pod собствнное стабильное DNS имя вместо балансировки трафика.
+
 ## Структура манифестов
 
 | Файл | Объекты |
@@ -110,7 +119,7 @@ Pod'ы пересоздаются и меняют IP.
 | `namespace.yml` | Namespace `todo-app` |
 | `postgres-secret.yml` | Secret с паролями и строкой подключения |
 | `backend-configmap.yml` | ConfigMap с переменными backend |
-| `postgres.yml` | PVC, Deployment, Service для PostgreSQL |
+| `postgres.yml` | Headless service + StatefulSet для PostgreSQL |
 | `backend.yml` | Deployment, Service backend с probes и лимитами |
 | `frontend.yml` | Deployment, Service frontend (2 реплики) |
 | `ingress.yml` | Ingress с маршрутизацией `/api` и `/` |
