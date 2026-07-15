@@ -120,6 +120,9 @@ stateful-комепонент:
 только файл `values.yaml`. Это дает возможность делать разные конфиги под разные окружения (dev, prod), 
 без дублирования манифестов.
 
+Также был добавлен дополнительный файл `values-secret.yaml`, с указанием пароля базы данных (добавлен в .gitignore).
+Это временное решение, для предотвращения передачи пароля в репозиторий на Github.
+
 
 ## Структура манифестов
 
@@ -156,6 +159,4 @@ kubectl get ingress -n todo-app -o yaml
 ## В планах
 
 - [ ] Перенос стека мониторинга (Prometheus, Grafana, Loki) в Kubernetes
-- [ ] Упаковка манифестов в Helm chart
-- [ ] StatefulSet для PostgreSQL вместо Deployment
 - [ ] Разворачивание в managed Kubernetes (например Selectel Managed Kubernetes)
