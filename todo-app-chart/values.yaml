@@ -1,0 +1,19 @@
+namespace: todo-app
+
+postgres:
+  db: todo_db
+  user: postgres
+  password: postgres
+  storage: 1Gi
+
+backend:
+  image: ghcr.io/redax7355/backend
+  tag: latest
+  port: 5000
+  replicas: 1
+
+frontend:
+  image: ghcr.io/redax7355/frontend
+  tag: latest
+  port: 80
+  replicas: 3

@@ -14,9 +14,12 @@
                     |            |
                  backend <--- frontend
                     |        (2 реплики)
-               postgres-db
+		    |        
+       Headless Service postgres-db
                     |
-          PersistentVolumeClaim
+      StatefulSet postgres (postgres-0)
+		    |
+ volumeClaimTemplates -> PVC (автоматически)
 ```
 
 Всё развёрнуто в отдельном namespace `todo-app`, изолированном от
@@ -37,14 +40,8 @@ minikube start --driver=docker
 # Включить Ingress controller
 minikube addons enable ingress
 
-# Применить манифесты по порядку
-kubectl apply -f namespace.yml
-kubectl apply -f postgres-secret.yml
-kubectl apply -f backend-configmap.yml
-kubectl apply -f postgres.yml
-kubectl apply -f backend.yml
-kubectl apply -f frontend.yml
-kubectl apply -f ingress.yml
+#Развернуть приложение через helm
+helm install todo-app ./todo-app-chart
 
 # Проверить статус
 kubectl get pods -n todo-app
@@ -111,6 +108,18 @@ stateful-комепонент:
 - **volumeClaimTemplates** - StatefulSet сам создает PVC для каждой реплики,
 без ручного создания.
 - **HeadlessService** - дает Pod собствнное стабильное DNS имя вместо балансировки трафика.
+
+### **Helm** - упаковка манифестов в chart
+Все манифесты собраны в Helm chart `todo-app-chart/` вместо отдельных
+файлов, применяемых по одному через kubectl apply:
+
+- `values.yaml` - единое место для всех изменяемых параметров
+(образы, теги, порты, кол-во реплик, пароли баз данных)
+- **Один релиз одной командой** - `helm install todo-app ./todo-app-chart` устанавливает весь стек сразу
+- **Управление жизненным циклом релиза** - helm upgade позволяет применять изменения изменяя
+только файл `values.yaml`. Это дает возможность делать разные конфиги под разные окружения (dev, prod), 
+без дублирования манифестов.
+
 
 ## Структура манифестов
 
