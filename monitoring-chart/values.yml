@@ -1,0 +1,40 @@
+namespace: monitoring
+
+nodeSelector:
+  role: monitoring
+
+prometheus:
+  image: prom/prometheus
+  tag: latest
+  storage: 2Gi
+
+loki:
+  image: grafana/loki
+  tag: latest
+  storage: 2Gi
+
+grafana:
+  image: grafana/grafana
+  tag: "11.2.0"
+  storage: 1Gi
+  adminUser: admin
+
+alertmanager:
+  image: prom/alertmanager
+  tag: latest
+  smtpHost: "mail.example.com:587"
+  smtpFrom: "mailfrom@example.com"
+  smtpUser: "example_user"
+  smtpTo: "mailto@example.com"
+
+nodeExporter:
+  image: prom/node-exporter
+  tag: latest
+
+promtail:
+  image: grafana/promtail
+  tag: latest
+
+cadvisor:
+  image: gcr.io/cadvisor/cadvisor
+  tag: latest

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-provider
+  namespace: {{ .Values.namespace }}
+data:
+  dashboards.yml: |
+{{ .Files.Get "files/grafana/dashboards/dashboards.yml" | indent 4 }}
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: {{ .Values.namespace }}
+data:
+  node.json: |
+{{ .Files.Get "files/grafana/dashboards/node.json" | indent 4 }}
+  docker.json: |
+{{ .Files.Get "files/grafana/dashboards/docker.json" | indent 4 }}
+
