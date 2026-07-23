@@ -1,5 +1,8 @@
 namespace: todo-app
 
+nodeSelector:
+  role: app
+
 postgres:
   db: todo_db
   user: postgres
