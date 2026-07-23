@@ -187,8 +187,8 @@ stateless-компонентов (backend, frontend) Deployment подходит
 (liveness), либо временно убирает его из балансировки трафика (readiness).
 
 ### Init Container — гарантия порядка запуска
-Backend использует 'initContainer', который ждёт готовкности Postgres
-перед стартомосновного контейнера:
+Backend использует 'initContainer', который ждёт готовности Postgres
+перед стартом основного контейнера:
 
 ```yaml
 initContainers:
