@@ -186,6 +186,21 @@ stateless-компонентов (backend, frontend) Deployment подходит
 Если проверка проваливается — Kubernetes либо перезапускает контейнер
 (liveness), либо временно убирает его из балансировки трафика (readiness).
 
+### Init Container — гарантия порядка запуска
+Backend использует 'initContainer', который ждёт готовкности Postgres
+перед стартомосновного контейнера:
+
+```yaml
+initContainers:
+  - name: wait-for-postgres
+    image: busybox:1.36
+    command: ['sh', '-c', 'until nc -z postgres-db 5432; do sleep 2; done']
+```
+
+InitContainer блокирует старт основонго контейнера полностью, пока условие не выполнится.
+Это решает проблему, когда backend мог упасть при первом запуске, пытаясь создать схему БД
+раньше, чем Postgres был готов принимать соединения.
+
 ### Namespace — изоляция
 Всё приложение развёрнуто в отдельном namespace `todo-app`, а не в `default`.
 Это стандартная практика — разделяет ресурсы проекта от служебных
