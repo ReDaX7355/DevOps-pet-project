@@ -15,7 +15,7 @@ loki:
 
 grafana:
   image: grafana/grafana
-  tag: "11.2.0"
+  tag: latest
   storage: 1Gi
   adminUser: admin
 
