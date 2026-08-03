@@ -226,6 +226,25 @@ InitContainer блокирует старт основонго контейне�
 Это даёт возможность держать разные `values.yaml` под разные окружения
 (dev/prod) без дублирования самих манифестов.
 
+### NetworkPolicy - ограничение сетевого доступа
+Манифест `postgres-networkpolicy.yml` ограничиввает входящий трафик к
+Postgres. Разрешает подключение Pod'ов только app: backend, блокируя доступ
+остальных Pod'ов.
+```yaml
+podSelector:
+  mathcLabels:
+    app: postgres
+ingress:
+  - from:
+      - podSelector:
+          matchLabels:
+            app: backend
+    ports:
+      - protocol: TCP
+        port: 5432
+```
+
+
 ## Мониторинг — что реализовано (`monitoring-chart`)
 
 ### Многонодовый кластер и nodeSelector
@@ -323,24 +342,6 @@ volumeMounts:
 ```
 Grafana сама сканирует папку и подхватывает все `.json` файлы —
 не нужно создавать дашборды вручную через UI.
-
-### NetworkPolicy - ограничение сетевого доступа
-Манифест `postgres-networkpolicy.yml` ограничиввает входящий трафик к
-Postgres. Разрешает подключение Pod'ов только app: backend, блокируя доступ
-остальных Pod'ов.
-```yaml
-podSelector:
-  mathcLabels:
-    app: postgres
-ingress:
-  - from:
-      - podSelector:
-          matchLabels:
-            app: backend
-    ports:
-      - protocol: TCP
-        port: 5432
-```
 
 
 ## Структура манифестов
