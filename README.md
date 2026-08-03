@@ -74,7 +74,7 @@ Loki ◄────── Promtail (DaemonSet, обе ноды) — сбор л
 
 ```bash
 # Запустить локальный кластер из двух нод
-minikube start --nodes=2 --driver=docker
+minikube start --nodes=2 --driver=docker --cni=calico
 
 # Пометить ноды по ролям
 kubectl label nodes minikube role=app
@@ -84,22 +84,22 @@ kubectl label nodes minikube-m02 role=monitoring
 minikube addons enable ingress
 
 # Развернуть приложение
-cat > todo-app-chart/values-secret.yaml << EOF
+cat > todo-app-chart/values-secret.yml << EOF
 postgres:
   password: <пароль>
 EOF
 
-helm install todo-app ./todo-app-chart -f todo-app-chart/values.yaml -f todo-app-chart/values-secret.yaml
+helm install todo-app ./todo-app-chart -f todo-app-chart/values.yml -f todo-app-chart/values-secret.yml
 
 # Развернуть мониторинг
-cat > monitoring-chart/values-secret.yaml << EOF
+cat > monitoring-chart/values-secret.yml << EOF
 grafana:
   adminPassword: <пароль>
 alertmanager:
   smtpPassword: <пароль>
 EOF
 
-helm install monitoring ./monitoring-chart -f monitoring-chart/values.yaml -f monitoring-chart/values-secret.yaml
+helm install monitoring ./monitoring-chart -f monitoring-chart/values.yml -f monitoring-chart/values-secret.yml
 
 # Проверить статус
 kubectl get pods -n todo-app
@@ -324,6 +324,25 @@ volumeMounts:
 Grafana сама сканирует папку и подхватывает все `.json` файлы —
 не нужно создавать дашборды вручную через UI.
 
+### NetworkPolicy - ограничение сетевого доступа
+Манифест `postgres-networkpolicy.yml` ограничиввает входящий трафик к
+Postgres. Разрешает подключение Pod'ов только app: backend, блокируя доступ
+остальных Pod'ов.
+```yaml
+podSelector:
+  mathcLabels:
+    app: postgres
+ingress:
+  - from:
+      - podSelector:
+          matchLabels:
+            app: backend
+    ports:
+      - protocol: TCP
+        port: 5432
+```
+
+
 ## Структура манифестов
 
 Манифесты собраны в Helm chart `todo-app-chart`:
@@ -331,10 +350,11 @@ Grafana сама сканирует папку и подхватывает вс�
 | Файл | Объекты |
 |---|---|
 | `Chart.yaml` | Метаданные chart'а |
-| `values.yaml` | Параметры по умолчанию (образы, реплики, пароли и т.д.) |
+| `values.yml` | Параметры по умолчанию (образы, реплики, пароли и т.д.) |
 | `templates/namespace.yml` | Namespace `todo-app` |
 | `templates/postgres-secret.yml` | Secret с паролями и строкой подключения |
 | `templates/backend-configmap.yml` | ConfigMap с переменными backend |
+| `templates/postgres-networkpolicy.yml` | Network policy для postgres |
 | `templates/postgres.yml` | Headless Service + StatefulSet для PostgreSQL |
 | `templates/backend.yml` | Deployment + Service для backend (с probes и лимитами) |
 | `templates/frontend.yml` | Deployment + Service для frontend |
@@ -344,7 +364,7 @@ Grafana сама сканирует папку и подхватывает вс�
 
 | Файл | Объекты |
 |---|---|
-| `values.yaml` | Параметры по умолчанию (образы, storage, SMTP-настройки) |
+| `values.yml` | Параметры по умолчанию (образы, storage, SMTP-настройки) |
 | `templates/namespace.yml` | Namespace `monitoring` |
 | `templates/rbac.yml` | ServiceAccount + ClusterRole + ClusterRoleBinding для Prometheus |
 | `templates/prometheus-config.yml` | ConfigMap с `prometheus.yml` |
