@@ -249,7 +249,7 @@ ingress:
 ```
 
 ### HorizontalPodAutoScaler - автомасштабирование frontend
-Для работы требуется addon metrics-server, для контроля зарузки Pod`ов.
+Для работы требуется addon metrics-server, для контроля нагрузки Pod`ов.
 
 Количество реплик frontend управляется автоматически через HPA
 на основе загруки CPU:
