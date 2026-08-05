@@ -6,7 +6,6 @@ metadata:
   labels:
     app: frontend
 spec:
-  replicas: {{ .Values.frontend.replicas }}
   selector:
     matchLabels:
       app: frontend
