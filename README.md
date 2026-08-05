@@ -80,8 +80,9 @@ minikube start --nodes=2 --driver=docker --cni=calico
 kubectl label nodes minikube role=app
 kubectl label nodes minikube-m02 role=monitoring
 
-# Включить Ingress controller
+# Включить Ingress controller и Metrics server
 minikube addons enable ingress
+minikube addons enable metrics-server
 
 # Развернуть приложение
 cat > todo-app-chart/values-secret.yml << EOF
@@ -226,6 +227,52 @@ InitContainer блокирует старт основонго контейне�
 Это даёт возможность держать разные `values.yaml` под разные окружения
 (dev/prod) без дублирования самих манифестов.
 
+### NetworkPolicy - ограничение сетевого доступа
+Для работы этого модуля необходим CNI (calico, kindnet).
+
+Манифест `postgres-networkpolicy.yml` ограничиввает входящий трафик к
+Postgres. Разрешает подключение Pod'ов только app: backend, блокируя доступ
+остальных Pod'ов.
+```yaml
+# templates/postgres-networkpolicy.yml
+podSelector:
+  mathcLabels:
+    app: postgres
+ingress:
+  - from:
+      - podSelector:
+          matchLabels:
+            app: backend
+    ports:
+      - protocol: TCP
+        port: 5432
+```
+
+### HorizontalPodAutoScaler - автомасштабирование frontend
+Для работы требуется addon metrics-server, для контроля зарузки Pod`ов.
+
+Количество реплик frontend управляется автоматически через HPA
+на основе загруки CPU:
+```yaml
+# templates/frontend-hpa.yml
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: {{ .Values.frontend.min_replicas }}
+  maxReplicas: {{ .Values.frontend.max_replicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+```
+
+Количество реплик frontend, ранее жестко заданное в конфиге убрано и регулируется HPA.
+
 ## Мониторинг — что реализовано (`monitoring-chart`)
 
 ### Многонодовый кластер и nodeSelector
@@ -323,24 +370,6 @@ volumeMounts:
 ```
 Grafana сама сканирует папку и подхватывает все `.json` файлы —
 не нужно создавать дашборды вручную через UI.
-
-### NetworkPolicy - ограничение сетевого доступа
-Манифест `postgres-networkpolicy.yml` ограничиввает входящий трафик к
-Postgres. Разрешает подключение Pod'ов только app: backend, блокируя доступ
-остальных Pod'ов.
-```yaml
-podSelector:
-  mathcLabels:
-    app: postgres
-ingress:
-  - from:
-      - podSelector:
-          matchLabels:
-            app: backend
-    ports:
-      - protocol: TCP
-        port: 5432
-```
 
 
 ## Структура манифестов

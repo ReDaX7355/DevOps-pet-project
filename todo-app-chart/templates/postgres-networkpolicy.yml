@@ -1,5 +1,5 @@
 apiVersion: networking.k8s.io/v1
-kind: NetworkPloicy
+kind: NetworkPolicy
 metadata:
   name: postgres-network-policy
   namespace: {{ .Values.namespace }}

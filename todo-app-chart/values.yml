@@ -18,4 +18,5 @@ frontend:
   image: ghcr.io/redax7355/frontend
   tag: latest
   port: 80
-  replicas: 3
+  min_replicas: 1
+  max_replicas: 3
