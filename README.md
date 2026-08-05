@@ -9,6 +9,40 @@
 персистентное хранилище, физическое разделение приложения и мониторинга
 по разным нодам кластера — как раньше было на двух отдельных VM.
 
+## Оглавление
+
+- [Требования](#требования)
+- [Архитектура кластера](#архитектура-кластера)
+  - [Приложение (todo-app-chart)](#приложение-todo-app-chart)
+  - [Мониторинг (monitoring-chart)](#мониторинг-monitoring-chart)
+- [Быстрый старт](#быстрый-старт)
+- [Доступ к приложению](#доступ-к-приложению)
+- [Доступ к мониторингу](#доступ-к-мониторингу)
+- [Приложение — что реализовано (todo-app-chart)](#приложение--что-реализовано-todo-app-chart)
+  - [Deployment вместо голого Pod](#deployment-вместо-голого-pod)
+  - [Service — постоянный адрес для Pod'ов](#service--постоянный-адрес-для-podов)
+  - [StatefulSet — для PostgreSQL вместо Deployment](#statefulset--для-postgresql-вместо-deployment)
+  - [Ingress — единая точка входа](#ingress--единая-точка-входа)
+  - [ConfigMap и Secret — конфигурация отдельно от кода](#configmap-и-secret--конфигурация-отдельно-от-кода)
+  - [Resources — лимиты ресурсов](#resources--лимиты-ресурсов)
+  - [Health checks — самодиагностика](#health-checks--самодиагностика)
+  - [Init Container — гарантия порядка запуска](#init-container--гарантия-порядка-запуска)
+  - [Namespace — изоляция](#namespace--изоляция)
+  - [Helm — упаковка манифестов в chart](#helm--упаковка-манифестов-в-chart)
+  - [NetworkPolicy — ограничение сетевого доступа](#networkpolicy--ограничение-сетевого-доступа)
+  - [HorizontalPodAutoscaler — автомасштабирование frontend](#horizontalpodautoscaler--автомасштабирование-frontend)
+- [Мониторинг — что реализовано (monitoring-chart)](#мониторинг--что-реализовано-monitoring-chart)
+  - [Многонодовый кластер и nodeSelector](#многонодовый-кластер-и-nodeselector)
+  - [DaemonSet — Promtail и node-exporter](#daemonset--promtail-и-node-exporter)
+  - [Метрики контейнеров через kubelet, без отдельного cAdvisor](#метрики-контейнеров-через-kubelet-без-отдельного-cadvisor)
+  - [RBAC — права Prometheus на чтение Kubernetes API](#rbac--права-prometheus-на-чтение-kubernetes-api)
+  - [Конфиги как ConfigMap через .Files.Get и tpl](#конфиги-как-configmap-через-filesget-и-tpl)
+  - [Дашборды Grafana через provisioning](#дашборды-grafana-через-provisioning)
+- [Структура манифестов](#структура-манифестов)
+- [Полезные команды](#полезные-команды)
+- [В планах](#в-планах)
+
+
 ## Требования
 
 - kubectl
@@ -135,7 +169,7 @@ kubectl port-forward -n monitoring svc/prometheus 9090:9090 --address 0.0.0.0
 Grafana: `http://<IP_VM>:3000`
 Prometheus: `http://<IP_VM>:9090`
 
-## Что реализовано
+## Приложение — что реализовано (`todo-app-chart`)
 
 ### Deployment вместо голого Pod
 Все компоненты (backend, frontend, postgres) развёрнуты через `Deployment`,
@@ -198,7 +232,7 @@ initContainers:
     command: ['sh', '-c', 'until nc -z postgres-db 5432; do sleep 2; done']
 ```
 
-InitContainer блокирует старт основонго контейнера полностью, пока условие не выполнится.
+InitContainer блокирует старт основного контейнера полностью, пока условие не выполнится.
 Это решает проблему, когда backend мог упасть при первом запуске, пытаясь создать схему БД
 раньше, чем Postgres был готов принимать соединения.
 
@@ -227,16 +261,16 @@ InitContainer блокирует старт основонго контейне�
 Это даёт возможность держать разные `values.yaml` под разные окружения
 (dev/prod) без дублирования самих манифестов.
 
-### NetworkPolicy - ограничение сетевого доступа
+### NetworkPolicy — ограничение сетевого доступа
 Для работы этого модуля необходим CNI (calico, kindnet).
 
-Манифест `postgres-networkpolicy.yml` ограничиввает входящий трафик к
+Манифест `postgres-networkpolicy.yml` ограничивает входящий трафик к
 Postgres. Разрешает подключение Pod'ов только app: backend, блокируя доступ
 остальных Pod'ов.
 ```yaml
 # templates/postgres-networkpolicy.yml
 podSelector:
-  mathcLabels:
+  matchLabels:
     app: postgres
 ingress:
   - from:
@@ -248,11 +282,11 @@ ingress:
         port: 5432
 ```
 
-### HorizontalPodAutoScaler - автомасштабирование frontend
+### HorizontalPodAutoScaler — автомасштабирование frontend
 Для работы требуется addon metrics-server, для контроля нагрузки Pod`ов.
 
 Количество реплик frontend управляется автоматически через HPA
-на основе загруки CPU:
+на основе загрузки CPU:
 ```yaml
 # templates/frontend-hpa.yml
 spec:
