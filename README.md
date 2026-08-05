@@ -247,7 +247,7 @@ cd ../ansible && ansible-playbook playbook.yml \
 ['k8s'](https://github.com/ReDaX7355/DevOps-pet-project/tree/k8s)
 
 Там реализован полный перенос стека приложения с использованием
-Deployment, Service, Ingress, ConfigMap/Secret, health checks, PVC.
+Deployment, Service, Ingress, ConfigMap/Secret, health checks, PVC и т.д.
 Подробное описание в README этой ветки.
 
 
