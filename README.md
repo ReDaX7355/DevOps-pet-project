@@ -228,13 +228,19 @@ InitContainer блокирует старт основонго контейне�
 (dev/prod) без дублирования самих манифестов.
 
 ### NetworkPolicy - ограничение сетевого доступа
+<<<<<<< HEAD
 Для работы этого модуля необходим CNI (calico, kindnet).
 
+=======
+>>>>>>> 0672500660564e63a85d116cf38617816a13a2ea
 Манифест `postgres-networkpolicy.yml` ограничиввает входящий трафик к
 Postgres. Разрешает подключение Pod'ов только app: backend, блокируя доступ
 остальных Pod'ов.
 ```yaml
+<<<<<<< HEAD
 # templates/postgres-networkpolicy.yml
+=======
+>>>>>>> 0672500660564e63a85d116cf38617816a13a2ea
 podSelector:
   mathcLabels:
     app: postgres
@@ -248,6 +254,7 @@ ingress:
         port: 5432
 ```
 
+<<<<<<< HEAD
 ### HorizontalPodAutoScaler - автомасштабирование frontend
 Для работы требуется addon metrics-server, для контроля зарузки Pod`ов.
 
@@ -272,6 +279,8 @@ spec:
 ```
 
 Количество реплик frontend, ранее жестко заданное в конфиге убрано и регулируется HPA.
+=======
+>>>>>>> 0672500660564e63a85d116cf38617816a13a2ea
 
 ## Мониторинг — что реализовано (`monitoring-chart`)
 
