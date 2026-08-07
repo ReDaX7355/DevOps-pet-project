@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: {{ .Values.namespace }}
+spec:
+  schedule: "0 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          containers:
+            - name: backup
+              image: postgres:16
+              command:
+                - sh
+                - -c
+                - |
+                  FILENAME="/backup/backup_$(date +%Y%m%d_%H%M%S).sql"
+                  echo "Creating backup: $FILENAME"
+                  pg_dump -h postgres-db -U postgres --clean --if-exists todo_db > "$FILENAME" || { echo "pg_dump failed"; exit 1; }
+                  echo "Backup created successfully"
+
+                  echo "Cleaning up old backups, keeping last 10..."
+                  cd /backup
+                  ls -1t backup_*.sql 2>/dev/null | tail -n +11 | xargs -r rm -v
+                  echo "Cleanup complete. Current backups:"
+                  ls -lh /backup
+                  exit 0
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_PASSWORD
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: postgres-backup-pvc
+
