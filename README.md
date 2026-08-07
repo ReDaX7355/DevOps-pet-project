@@ -442,12 +442,15 @@ Grafana сама сканирует папку и подхватывает вс�
 | Файл | Объекты |
 |---|---|
 | `Chart.yaml` | Метаданные chart'а |
+| `scripts/restore-postgres.yml` | Скрипт для восстановления БД из бэкапа на выбор |
 | `values.yml` | Параметры по умолчанию (образы, реплики, пароли и т.д.) |
 | `templates/namespace.yml` | Namespace `todo-app` |
 | `templates/postgres-secret.yml` | Secret с паролями и строкой подключения |
-| `templates/backend-configmap.yml` | ConfigMap с переменными backend |
+| `templates/postgres-backup-pvc.yml` | PVC для хранения бэкапов БД Postgres |
+| `templates/postgres-backup-cronjob.yml` | CronJob для ежедневного создания бэкапов + чистка каталога бэкапов (остается 10 последних) |
 | `templates/postgres-networkpolicy.yml` | Network policy для postgres |
 | `templates/postgres.yml` | Headless Service + StatefulSet для PostgreSQL |
+| `templates/backend-configmap.yml` | ConfigMap с переменными backend |
 | `templates/backend.yml` | Deployment + Service для backend (с probes и лимитами) |
 | `templates/frontend.yml` | Deployment + Service для frontend |
 | `templates/ingress.yml` | Ingress с маршрутизацией `/api` и `/` |
