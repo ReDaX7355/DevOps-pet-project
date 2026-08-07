@@ -30,7 +30,9 @@
   - [Namespace — изоляция](#namespace--изоляция)
   - [Helm — упаковка манифестов в chart](#helm--упаковка-манифестов-в-chart)
   - [NetworkPolicy — ограничение сетевого доступа](#networkpolicy--ограничение-сетевого-доступа)
-  - [HorizontalPodAutoscaler — автомасштабирование frontend](#horizontalpodautoscaler--автомасштабирование-frontend)
+  - [HorizontalPodAutoscaler — автомасштабирование по реликам](#horizontalpodautoscaler--автомасштабирование-по-репликам)
+  - [VPA (Vertical Pod Autoscaler) — автомасштабирование по ресурсам](#vpa-vertical-pod-autoscaler--автомасштабирование-по-ресурсам)
+  - [CronJob — автоматический бэкап БД PostgreSQL](#cronjob--автоматический-бэкап-бд-postgresql)
 - [Мониторинг — что реализовано (monitoring-chart)](#мониторинг--что-реализовано-monitoring-chart)
   - [Многонодовый кластер и nodeSelector](#многонодовый-кластер-и-nodeselector)
   - [DaemonSet — Promtail и node-exporter](#daemonset--promtail-и-node-exporter)
@@ -282,7 +284,7 @@ ingress:
         port: 5432
 ```
 
-### HorizontalPodAutoScaler — автомасштабирование frontend
+### HorizontalPodAutoScaler — автомасштабирование по репликам
 Для работы требуется addon metrics-server, для контроля нагрузки Pod`ов.
 
 Количество реплик frontend управляется автоматически через HPA
@@ -306,6 +308,32 @@ spec:
 ```
 
 Количество реплик frontend, ранее жестко заданное в конфиге убрано и регулируется HPA.
+
+### VPA (Vertical Pod Autoscaler) — автомасштабирование по ресурсам
+> Рассмотрен, не реализован в minikube
+В отличие от HPA (меняет количество реплик), VPA автоматически
+корректирует `resources.requests/limits` отдельного Pod'а на основе
+реального потребления, избавляя от необходимости подбирать значения
+вручную. VPA не входит в стандартные компоненты Kubernetes и не имеет
+addon в minikube — требует отдельной установки (`vpa-up.sh` из
+официального репозитория `kubernetes/autoscaler`)
+
+Важное архитектурное ограничение — VPA и HPA нельзя использовать
+одновременно на одном и том же измерении ресурса (например CPU) для
+одного Deployment, они будут конфликтовать между собой.
+
+Планируется реализовать при переносе на managed Kubernetes (Selectel),
+где доступно больше ресурсов и часто есть встроенная поддержка.
+
+### CronJob — автоматический бэкап БД PostgreSQL
+Ежедневный бэкап базы данных через `CronJob` с автоматической очисткой
+старых файлов бэкапа (хранятся только 10 последних).
+
+Файлы бэкапов хранятся в отдельнос PVC postgres-backup-pvc.
+
+Также есть возможность восстановления базы данных с помощью
+скрипта `todo-app-cart/scripts/restore-postgres.sh`, который
+позволяет выбрать необходиммый бэкап из списка последних 10.
 
 ## Мониторинг — что реализовано (`monitoring-chart`)
 
